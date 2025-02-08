@@ -23,8 +23,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
-    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric().withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -40,7 +39,7 @@ public class RobotContainer {
     }
 
     private static double scaleDown(double in) {
-        return Math.pow(in, 5);
+        return Math.pow(in, 9);
     }
 
     private static double deadBand(double in) {
@@ -51,18 +50,14 @@ public class RobotContainer {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(scaleDown(deadBand(-joystick.getLeftY()) * MaxSpeed)) // Drive forward with negative Y (forward)
-                    .withVelocityY(scaleDown(deadBand(-joystick.getLeftX()) * MaxSpeed)) // Drive left with negative X (left)
-                    .withRotationalRate(deadBand(-joystick.getRightX()) * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
+                // Drivetrain will execute this command periodically
+                drivetrain.applyRequest(() -> drive.withVelocityX(scaleDown(deadBand(joystick.getLeftY()) * MaxSpeed)) // Drive forward with negative Y (forward)
+                        .withVelocityY(scaleDown(deadBand(joystick.getLeftX()) * MaxSpeed)) // Drive left with negative X (left)
+                        .withRotationalRate(deadBand(joystick.getRightX()) * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                ));
 
         joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(deadBand(-joystick.getLeftY()), deadBand(-joystick.getLeftX())))
-        ));
+        joystick.b().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(deadBand(-joystick.getLeftY()), deadBand(-joystick.getLeftX())))));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -71,8 +66,10 @@ public class RobotContainer {
         joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
+
+
         // reset the field-centric heading on left bumper press
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

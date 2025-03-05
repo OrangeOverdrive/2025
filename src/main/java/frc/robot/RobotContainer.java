@@ -6,6 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -82,6 +83,17 @@ public class RobotContainer {
         SparkMax leftElevator = new SparkMax(21, SparkLowLevel.MotorType.kBrushless);
         SparkMax rightElevator = new SparkMax(22, SparkLowLevel.MotorType.kBrushless);
 
+        SparkMax armThing = new SparkMax(30, SparkLowLevel.MotorType.kBrushless);
+
+        joystick.y().whileTrue(Commands.runOnce(() -> {
+//            System.out.println("Left Elevator" + leftElevator.getEncoder().getPosition() + " Right Elevator" + rightElevator.getEncoder().getPosition());
+            armThing.set(-1);
+        }));
+
+        joystick.y().whileFalse(Commands.runOnce(() -> {
+            armThing.set(0);
+        }));
+
         joystick.x().whileTrue(Commands.runOnce(() -> {
             if (joystick.getLeftTriggerAxis() > 0) {
                 leftElevator.set(-0.05);
@@ -93,8 +105,8 @@ public class RobotContainer {
         }));
 
         joystick.x().whileFalse(Commands.runOnce(() -> {
-            leftElevator.set(0);
-            rightElevator.set(0);
+            leftElevator.stopMotor();
+            rightElevator.stopMotor();
         }));
 
         drivetrain.registerTelemetry(logger::telemeterize);

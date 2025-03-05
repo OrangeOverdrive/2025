@@ -63,9 +63,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopPeriodic() {
-        SparkMax leftElevator = new SparkMax(21, SparkLowLevel.MotorType.kBrushless);
-
-        System.out.println("Left Elevator: " + leftElevator.getEncoder().getPosition());
     }
 
     @Override

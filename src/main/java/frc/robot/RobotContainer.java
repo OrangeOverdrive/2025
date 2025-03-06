@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.ElevatorSubsystem;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
@@ -31,6 +32,7 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+    private final ElevatorSubsystem s_elevator = new ElevatorSubsystem();
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -76,38 +78,11 @@ public class RobotContainer {
         joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
+        joystick.x().onTrue(Commands.runOnce(s_elevator::moveUp));
+        joystick.x().onFalse(Commands.runOnce(s_elevator::stop));
 
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-
-        SparkMax leftElevator = new SparkMax(21, SparkLowLevel.MotorType.kBrushless);
-        SparkMax rightElevator = new SparkMax(22, SparkLowLevel.MotorType.kBrushless);
-
-        SparkMax armThing = new SparkMax(30, SparkLowLevel.MotorType.kBrushless);
-
-        joystick.y().whileTrue(Commands.runOnce(() -> {
-//            System.out.println("Left Elevator" + leftElevator.getEncoder().getPosition() + " Right Elevator" + rightElevator.getEncoder().getPosition());
-            armThing.set(-1);
-        }));
-
-        joystick.y().whileFalse(Commands.runOnce(() -> {
-            armThing.set(0);
-        }));
-
-        joystick.x().whileTrue(Commands.runOnce(() -> {
-            if (joystick.getLeftTriggerAxis() > 0) {
-                leftElevator.set(-0.05);
-                rightElevator.set(0.05);
-            } else {
-                leftElevator.set(0.05);
-                rightElevator.set(-0.5);
-            }
-        }));
-
-        joystick.x().whileFalse(Commands.runOnce(() -> {
-            leftElevator.stopMotor();
-            rightElevator.stopMotor();
-        }));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

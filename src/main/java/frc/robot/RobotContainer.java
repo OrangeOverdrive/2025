@@ -79,7 +79,7 @@ public class RobotContainer {
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         joystick.x().onTrue(Commands.runOnce(s_elevator::moveUp));
-        joystick.x().onFalse(Commands.runOnce(s_elevator::stop));
+        joystick.x().onFalse(Commands.runOnce(s_elevator::hold));
 
         // reset the field-centric heading on left bumper press
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));

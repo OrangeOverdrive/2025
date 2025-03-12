@@ -6,12 +6,9 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import com.revrobotics.spark.SparkLowLevel;
-import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,10 +33,11 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController controller1 = new CommandXboxController(0);
+    private final CommandXboxController controller2 = new CommandXboxController(1);
 
     private double inputScaler() {
-        return Math.max(1.0 - joystick.getRightTriggerAxis(), 0.15);
+        return Math.max(1.0 - controller1.getRightTriggerAxis(), 0.15);
     }
 
 
@@ -63,26 +61,29 @@ public class RobotContainer {
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
                 // Drivetrain will execute this command periodically
-                drivetrain.applyRequest(() -> drive.withVelocityX(scaleDown(MathUtil.applyDeadband(joystick.getLeftY() * inputScaler(), 0.05) * MaxSpeed)) // Drive forward with negative Y (forward)
-                        .withVelocityY(scaleDown(MathUtil.applyDeadband(joystick.getLeftX() * inputScaler(), 0.05) * MaxSpeed)) // Drive left with negative X (left)
-                        .withRotationalRate(MathUtil.applyDeadband(-joystick.getRightX(), 0.05) * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drivetrain.applyRequest(() -> drive.withVelocityX(scaleDown(MathUtil.applyDeadband(controller1.getLeftY() * inputScaler(), 0.05) * MaxSpeed)) // Drive forward with negative Y (forward)
+                        .withVelocityY(scaleDown(MathUtil.applyDeadband(controller1.getLeftX() * inputScaler(), 0.05) * MaxSpeed)) // Drive left with negative X (left)
+                        .withRotationalRate(MathUtil.applyDeadband(-controller1.getRightX(), 0.05) * MaxAngularRate) // Drive counterclockwise with negative X (left)
                 ));
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(MathUtil.applyDeadband(-joystick.getLeftY(), 0.05), MathUtil.applyDeadband(-joystick.getLeftX(), 0.05)))));
+        controller1.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        controller1.b().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(MathUtil.applyDeadband(-controller1.getLeftY(), 0.05), MathUtil.applyDeadband(-controller1.getLeftX(), 0.05)))));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        controller1.back().and(controller1.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        controller1.back().and(controller1.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        controller1.start().and(controller1.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        controller1.start().and(controller1.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-        joystick.x().onTrue(Commands.runOnce(s_elevator::moveUp));
-        joystick.x().onFalse(Commands.runOnce(s_elevator::hold));
+        controller2.leftTrigger().whileTrue(Commands.run(() -> s_elevator.moveUp(controller2.getLeftTriggerAxis())));
+        controller2.leftTrigger().onFalse(Commands.runOnce(s_elevator::hold));
+
+        controller2.rightTrigger().whileTrue(Commands.run(() -> s_elevator.moveDown(controller2.getRightTriggerAxis())));
+        controller2.rightTrigger().onFalse(Commands.runOnce(s_elevator::hold));
 
         // reset the field-centric heading on left bumper press
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        controller1.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

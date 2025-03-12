@@ -31,12 +31,17 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final ElevatorFeedforward FEED_FORWARD = new ElevatorFeedforward(VALUE_KS, VALUE_KG, VALUE_KV, VALUE_KA);
     private double SET_POINT = 0;
 
+    private double ZERO_POINT;
+
+    private double leftMotorPrevPos = 0;
+    private double rightMotorPrevPos = 0;
+
 
     public ElevatorSubsystem() {
         leftMotor = new SparkMax(21, SparkLowLevel.MotorType.kBrushless);
         rightMotor = new SparkMax(22, SparkLowLevel.MotorType.kBrushless);
 
-
+        ZERO_POINT = leftMotor.getEncoder().getPosition();
 
         SparkMaxConfig config = new SparkMaxConfig();
         config.idleMode(SparkBaseConfig.IdleMode.kBrake);
@@ -61,7 +66,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("KA", VALUE_KA);
 
 
-//        config.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder).pidf(kP, kI, kD, 0);
+        config.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder).pidf(kP, kI, kD, 0);
 //
 //        leftMotor.configure(config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
 //        rightMotor.configure(config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
@@ -77,29 +82,50 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     }
 
-    public void moveUp() {
-        SET_POINT = 100;
+    public void moveUp(double speed) {
+        double scaledSpeed = speed * 0.5;
+        move(scaledSpeed);
     }
 
-    public void moveDown() {
-//        leftMotor.set(-0.25);
-//        rightMotor.set(0.25);
+    public void moveDown(double speed) {
+        if (leftMotor.getEncoder().getPosition() > ZERO_POINT) {
+            double scaledSpeed = speed * 0.1;
+            move(-scaledSpeed);
+        } else {
+            hold();
+        }
     }
 
-    @Override
-    public void periodic() {
-        leftMotor.set(pid.calculate(leftMotor.getEncoder().getPosition(), SET_POINT));
-        rightMotor.set(-pid.calculate(rightMotor.getEncoder().getPosition(), SET_POINT));
-
-        System.out.println("Left Encoder: " + leftMotor.getEncoder().getPosition());
+    public void move(double speed) {
+        leftMotor.set(speed);
+        rightMotor.set(-speed);
+        leftMotorPrevPos = leftMotor.getEncoder().getPosition();
+        rightMotorPrevPos = rightMotor.getEncoder().getPosition();
+        System.out.println("x should be held down rn");
     }
+
+//    @Override
+//    public void periodic() {
+//        leftMotor.set(pid.calculate(leftMotor.getEncoder().getPosition(), SET_POINT));
+//        rightMotor.set(-pid.calculate(rightMotor.getEncoder().getPosition(), SET_POINT));
+//
+//        System.out.println("Left Encoder: " + leftMotor.getEncoder().getPosition());
+//    }
 
     public void hold() {
-        leftMotor.set(0);
-        rightMotor.set(0);
+//        leftMotor.set(0);
+//        rightMotor.set(0);
+        leftMotor.getClosedLoopController().setReference(leftMotorPrevPos, ControlType.kPosition);
+        rightMotor.getClosedLoopController().setReference(rightMotorPrevPos, ControlType.kPosition);
 //        leftMotor.getClosedLoopController().setReference(leftMotor.getEncoder().getPosition(), ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0, new ElevatorFeedforward(VALUE_KS, VALUE_KV, VALUE_KA, VALUE_KG).calculate(0), SparkClosedLoopController.ArbFFUnits.kVoltage);
 //        rightMotor.getClosedLoopController().setReference(rightMotor.getEncoder().getPosition(), ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0, new ElevatorFeedforward(VALUE_KS, VALUE_KV, VALUE_KA, VALUE_KG).calculate(0), SparkClosedLoopController.ArbFFUnits.kVoltage);
 //        leftMotor.setVoltage(FEED_FORWARD.calculate(0));
 //        rightMotor.setVoltage(FEED_FORWARD.calculate(0));
+    }
+
+    @Override
+    public void periodic() {
+        System.out.println("Holding at (" + leftMotorPrevPos + ", " + rightMotorPrevPos + ")");
+        System.out.println("Current Position: (" + leftMotor.getEncoder().getPosition() + ", " + rightMotor.getEncoder().getPosition() + ")");
     }
 }

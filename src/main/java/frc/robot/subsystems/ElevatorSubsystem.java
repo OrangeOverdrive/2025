@@ -12,23 +12,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class ElevatorSubsystem extends SubsystemBase {
-    private SparkMax leftMotor;
-    private SparkMax rightMotor;
-    private double startingPosition;
-    private final double DISTANCE_TO_FULL = 1;
-    private final double VALUE_P = 0.001;
+    private final SparkMax leftMotor;
+    private final SparkMax rightMotor;
 
-    private final double VALUE_KS = 0;
-    private final double VALUE_KG = 0.31;
-    private final double VALUE_KV = 3.07;
-    private final double VALUE_KA = 0.03;
-
-    private double STOP_POS;
-
-    private final ElevatorFeedforward FEED_FORWARD = new ElevatorFeedforward(VALUE_KS, VALUE_KG, VALUE_KV, VALUE_KA);
-    private double SET_POINT = 0;
-
-    private double ZERO_POINT;
+    private final double ZERO_POINT;
 
     private double leftMotorPrevPos = 0;
     private double rightMotorPrevPos = 0;
@@ -49,7 +36,6 @@ public class ElevatorSubsystem extends SubsystemBase {
         leftConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
         rightConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
         rightConfig.inverted(true);
-//      config.encoder.positionConversionFactor(1000).velocityConversionFactor(1000);
 
         double kP = 0.001;
         double kI = 0;
@@ -72,14 +58,6 @@ public class ElevatorSubsystem extends SubsystemBase {
         m_armIntake = new TalonFX(Constants.CanIDs.ARM_INTAKE);
     }
 
-    public void setCurrentPosition() {
-
-    }
-
-    public void brake() {
-
-    }
-
     public void moveUp(double speed) {
         double scaledSpeed = speed * 0.2;
         move(scaledSpeed);
@@ -100,14 +78,6 @@ public class ElevatorSubsystem extends SubsystemBase {
         leftMotorPrevPos = leftMotor.getEncoder().getPosition();
         rightMotorPrevPos = rightMotor.getEncoder().getPosition();
     }
-
-//    @Override
-//    public void periodic() {
-//        leftMotor.set(pid.calculate(leftMotor.getEncoder().getPosition(), SET_POINT));
-//        rightMotor.set(-pid.calculate(rightMotor.getEncoder().getPosition(), SET_POINT));
-//
-//        System.out.println("Left Encoder: " + leftMotor.getEncoder().getPosition());
-//    }
 
     public void hold() {
         if (leftMotor.getEncoder().getPosition() < ZERO_POINT) {

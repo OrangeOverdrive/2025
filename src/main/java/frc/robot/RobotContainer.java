@@ -77,10 +77,36 @@ public class RobotContainer {
         controller1.start().and(controller1.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         controller2.leftTrigger().whileTrue(Commands.run(() -> s_elevator.moveUp(controller2.getLeftTriggerAxis())));
-        controller2.leftTrigger().onFalse(Commands.runOnce(s_elevator::hold));
-
         controller2.rightTrigger().whileTrue(Commands.run(() -> s_elevator.moveDown(controller2.getRightTriggerAxis())));
-        controller2.rightTrigger().onFalse(Commands.runOnce(s_elevator::hold));
+
+        controller2.rightTrigger().or(controller2.leftTrigger()).onFalse(Commands.runOnce(s_elevator::hold));
+
+        // Pivot
+        // Up
+        controller2.povUp().whileTrue(Commands.run(() -> {
+            s_elevator.moveArm(-0.5);
+        }));
+
+        // Down
+        controller2.povDown().whileTrue(Commands.run(() -> {
+            s_elevator.moveArm(0.25);
+        }));
+
+        controller2.povUp().or(controller2.povDown()).onFalse(Commands.runOnce(s_elevator::holdPivot));
+
+        // Intake
+        controller2.leftBumper().whileTrue(Commands.run(() -> {
+            s_elevator.moveIntake(0.25);
+        }));
+
+        controller2.rightBumper().whileTrue(Commands.run(() -> {
+            s_elevator.moveIntake(-0.1);
+        }));
+
+        controller2.leftBumper().or(controller2.rightBumper()).onFalse(Commands.run(() -> {
+            s_elevator.moveIntake(0);
+        }));
+
 
         // reset the field-centric heading on left bumper press
         controller1.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));

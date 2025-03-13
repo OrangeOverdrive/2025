@@ -1,17 +1,15 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.config.BaseConfig;
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class ElevatorSubsystem extends SubsystemBase {
     private SparkMax leftMotor;
@@ -19,7 +17,6 @@ public class ElevatorSubsystem extends SubsystemBase {
     private double startingPosition;
     private final double DISTANCE_TO_FULL = 1;
     private final double VALUE_P = 0.001;
-    private final PIDController pid;
 
     private final double VALUE_KS = 0;
     private final double VALUE_KG = 0.31;
@@ -36,22 +33,27 @@ public class ElevatorSubsystem extends SubsystemBase {
     private double leftMotorPrevPos = 0;
     private double rightMotorPrevPos = 0;
 
+    // Arm
+    private final SparkMax m_arm;
+    private final TalonFX m_armIntake;
+    private double armPrevPos = 0;
 
     public ElevatorSubsystem() {
-        leftMotor = new SparkMax(21, SparkLowLevel.MotorType.kBrushless);
-        rightMotor = new SparkMax(22, SparkLowLevel.MotorType.kBrushless);
+        leftMotor = new SparkMax(Constants.CanIDs.ELEVATOR_LEFT, SparkLowLevel.MotorType.kBrushless);
+        rightMotor = new SparkMax(Constants.CanIDs.ELEVATOR_RIGHT, SparkLowLevel.MotorType.kBrushless);
 
         ZERO_POINT = leftMotor.getEncoder().getPosition();
 
-        SparkMaxConfig config = new SparkMaxConfig();
-        config.idleMode(SparkBaseConfig.IdleMode.kBrake);
-//        config.encoder.positionConversionFactor(1000).velocityConversionFactor(1000);
+        SparkMaxConfig leftConfig = new SparkMaxConfig();
+        SparkMaxConfig rightConfig = new SparkMaxConfig();
+        leftConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+        rightConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+        rightConfig.inverted(true);
+//      config.encoder.positionConversionFactor(1000).velocityConversionFactor(1000);
 
         double kP = 0.001;
         double kI = 0;
         double kD = 0;
-
-        pid = new PIDController(kP, kI, kD);
 
         SmartDashboard.putNumber("Elevator P", kP);
         SmartDashboard.putNumber("Elevator I", kI);
@@ -60,18 +62,14 @@ public class ElevatorSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Left Encoder", leftMotor.getEncoder().getPosition());
         SmartDashboard.putNumber("Right Encoder", rightMotor.getEncoder().getPosition());
 
-        SmartDashboard.putNumber("KS", VALUE_KS);
-        SmartDashboard.putNumber("KG", VALUE_KG);
-        SmartDashboard.putNumber("KV", VALUE_KV);
-        SmartDashboard.putNumber("KA", VALUE_KA);
+        leftConfig.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder).pidf(kP, kI, kD, 0);
+        rightConfig.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder).pidf(kP, kI, kD, 0);
+        leftMotor.configure(leftConfig, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
+        rightMotor.configure(rightConfig, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
-
-        config.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder).pidf(kP, kI, kD, 0);
-//
-//        leftMotor.configure(config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
-//        rightMotor.configure(config, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
-
-//        leftMotor.setVoltage(FEED_FORWARD.calculate(0));
+        // Arm
+        m_arm = new SparkMax(Constants.CanIDs.ARM_PIVOT, SparkLowLevel.MotorType.kBrushless);
+        m_armIntake = new TalonFX(Constants.CanIDs.ARM_INTAKE);
     }
 
     public void setCurrentPosition() {
@@ -83,7 +81,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void moveUp(double speed) {
-        double scaledSpeed = speed * 0.5;
+        double scaledSpeed = speed * 0.2;
         move(scaledSpeed);
     }
 
@@ -98,10 +96,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public void move(double speed) {
         leftMotor.set(speed);
-        rightMotor.set(-speed);
+        rightMotor.set(speed);
         leftMotorPrevPos = leftMotor.getEncoder().getPosition();
         rightMotorPrevPos = rightMotor.getEncoder().getPosition();
-        System.out.println("x should be held down rn");
     }
 
 //    @Override
@@ -113,19 +110,32 @@ public class ElevatorSubsystem extends SubsystemBase {
 //    }
 
     public void hold() {
-//        leftMotor.set(0);
-//        rightMotor.set(0);
-        leftMotor.getClosedLoopController().setReference(leftMotorPrevPos, ControlType.kPosition);
-        rightMotor.getClosedLoopController().setReference(rightMotorPrevPos, ControlType.kPosition);
-//        leftMotor.getClosedLoopController().setReference(leftMotor.getEncoder().getPosition(), ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0, new ElevatorFeedforward(VALUE_KS, VALUE_KV, VALUE_KA, VALUE_KG).calculate(0), SparkClosedLoopController.ArbFFUnits.kVoltage);
-//        rightMotor.getClosedLoopController().setReference(rightMotor.getEncoder().getPosition(), ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0, new ElevatorFeedforward(VALUE_KS, VALUE_KV, VALUE_KA, VALUE_KG).calculate(0), SparkClosedLoopController.ArbFFUnits.kVoltage);
-//        leftMotor.setVoltage(FEED_FORWARD.calculate(0));
-//        rightMotor.setVoltage(FEED_FORWARD.calculate(0));
+        if (leftMotor.getEncoder().getPosition() < ZERO_POINT) {
+            leftMotor.set(0);
+            rightMotor.set(0);
+        } else {
+            leftMotor.getClosedLoopController().setReference(leftMotorPrevPos, ControlType.kPosition);
+            rightMotor.getClosedLoopController().setReference(rightMotorPrevPos, ControlType.kPosition);
+        }
+    }
+
+    public void moveArm(double speed) {
+        m_arm.set(speed);
+
+        armPrevPos = m_arm.getEncoder().getPosition();
+    }
+
+    public void moveIntake(double speed) {
+        m_armIntake.set(speed);
+    }
+
+    public void holdPivot() {
+        m_arm.getClosedLoopController().setReference(armPrevPos, ControlType.kPosition);
     }
 
     @Override
     public void periodic() {
-        System.out.println("Holding at (" + leftMotorPrevPos + ", " + rightMotorPrevPos + ")");
-        System.out.println("Current Position: (" + leftMotor.getEncoder().getPosition() + ", " + rightMotor.getEncoder().getPosition() + ")");
+        System.out.println("Arm holding at (" + armPrevPos + ")");
+        System.out.println("Arm Current Position: " + m_arm.getEncoder().getPosition());
     }
 }

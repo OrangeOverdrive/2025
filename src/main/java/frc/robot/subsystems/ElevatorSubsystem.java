@@ -6,7 +6,6 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -15,21 +14,21 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final SparkMax leftMotor;
     private final SparkMax rightMotor;
 
-    private final double ZERO_POINT;
+    private final double ELEVATOR_ZERO;
 
     private double leftMotorPrevPos = 0;
     private double rightMotorPrevPos = 0;
 
     // Arm
-    private final SparkMax m_arm;
-    private final TalonFX m_armIntake;
+    private final SparkMax armMotor;
+    private final TalonFX armIntakeMotor;
     private double armPrevPos = 0;
 
     public ElevatorSubsystem() {
         leftMotor = new SparkMax(Constants.CanIDs.ELEVATOR_LEFT, SparkLowLevel.MotorType.kBrushless);
         rightMotor = new SparkMax(Constants.CanIDs.ELEVATOR_RIGHT, SparkLowLevel.MotorType.kBrushless);
 
-        ZERO_POINT = leftMotor.getEncoder().getPosition();
+        ELEVATOR_ZERO = leftMotor.getEncoder().getPosition();
 
         SparkMaxConfig leftConfig = new SparkMaxConfig();
         SparkMaxConfig rightConfig = new SparkMaxConfig();
@@ -54,8 +53,8 @@ public class ElevatorSubsystem extends SubsystemBase {
         rightMotor.configure(rightConfig, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
         // Arm
-        m_arm = new SparkMax(Constants.CanIDs.ARM_PIVOT, SparkLowLevel.MotorType.kBrushless);
-        m_armIntake = new TalonFX(Constants.CanIDs.ARM_INTAKE);
+        armMotor = new SparkMax(Constants.CanIDs.ARM_PIVOT, SparkLowLevel.MotorType.kBrushless);
+        armIntakeMotor = new TalonFX(Constants.CanIDs.ARM_INTAKE);
     }
 
     public void moveUp(double speed) {
@@ -64,7 +63,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void moveDown(double speed) {
-        if (leftMotor.getEncoder().getPosition() > ZERO_POINT) {
+        if (leftMotor.getEncoder().getPosition() > ELEVATOR_ZERO) {
             double scaledSpeed = speed * 0.1;
             move(-scaledSpeed);
         } else {
@@ -80,7 +79,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void hold() {
-        if (leftMotor.getEncoder().getPosition() < ZERO_POINT) {
+        if (leftMotor.getEncoder().getPosition() < ELEVATOR_ZERO) {
             leftMotor.set(0);
             rightMotor.set(0);
         } else {
@@ -89,23 +88,24 @@ public class ElevatorSubsystem extends SubsystemBase {
         }
     }
 
+    // Arm
     public void moveArm(double speed) {
-        m_arm.set(speed);
+        armMotor.set(speed);
 
-        armPrevPos = m_arm.getEncoder().getPosition();
+        armPrevPos = armMotor.getEncoder().getPosition();
     }
 
     public void moveIntake(double speed) {
-        m_armIntake.set(speed);
+        armIntakeMotor.set(speed);
     }
 
     public void holdPivot() {
-        m_arm.getClosedLoopController().setReference(armPrevPos, ControlType.kPosition);
+        armMotor.getClosedLoopController().setReference(armPrevPos, ControlType.kPosition);
     }
 
     @Override
     public void periodic() {
         System.out.println("Arm holding at (" + armPrevPos + ")");
-        System.out.println("Arm Current Position: " + m_arm.getEncoder().getPosition());
+        System.out.println("Arm Current Position: " + armMotor.getEncoder().getPosition());
     }
 }

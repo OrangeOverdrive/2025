@@ -24,6 +24,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final TalonFX armIntakeMotor;
     private double armPrevPos = 0;
 
+
     public ElevatorSubsystem() {
         leftMotor = new SparkMax(Constants.CanIDs.ELEVATOR_LEFT, SparkLowLevel.MotorType.kBrushless);
         rightMotor = new SparkMax(Constants.CanIDs.ELEVATOR_RIGHT, SparkLowLevel.MotorType.kBrushless);

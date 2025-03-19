@@ -7,6 +7,17 @@ public class Constants {
 
         public static final int ARM_PIVOT = 30;
         public static final int ARM_INTAKE = 31;
+
+        public static final int WINCH = 32;
+
+        public static final int ALGAE_PIVOT = 33;
+        public static final int ALGAE_SUCTION = 34;
+    }
+
+    public static final class DigitalIO {
+        public static final int WINCH = 0;
+        public static final int ELEVATOR_BOTTOM = 1;
+        public static final int ELEVATOR_TOP = 2;
     }
 
     public static final class ElevatorConstants {

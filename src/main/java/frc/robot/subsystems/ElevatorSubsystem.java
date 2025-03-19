@@ -6,6 +6,7 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -14,15 +15,18 @@ public class ElevatorSubsystem extends SubsystemBase {
     private final SparkMax leftMotor;
     private final SparkMax rightMotor;
 
+    private final DigitalInput elevatorBottomLS = new DigitalInput(Constants.DigitalIO.ELEVATOR_BOTTOM);
+    private final DigitalInput elevatorTopLS = new DigitalInput(Constants.DigitalIO.ELEVATOR_TOP);
+
     private final double ELEVATOR_ZERO;
 
     private double leftMotorPrevPos = 0;
     private double rightMotorPrevPos = 0;
 
     // Arm
-    private final SparkMax armMotor;
+    private final TalonFX armPivotMotor;
     private final TalonFX armIntakeMotor;
-    private double armPrevPos = 0;
+//    private double armPivotPrevPos = 0;
 
 
     public ElevatorSubsystem() {
@@ -54,7 +58,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         rightMotor.configure(rightConfig, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
 
         // Arm
-        armMotor = new SparkMax(Constants.CanIDs.ARM_PIVOT, SparkLowLevel.MotorType.kBrushless);
+        armPivotMotor = new TalonFX(Constants.CanIDs.ARM_PIVOT);
         armIntakeMotor = new TalonFX(Constants.CanIDs.ARM_INTAKE);
     }
 
@@ -64,23 +68,23 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void moveDown(double speed) {
-        if (leftMotor.getEncoder().getPosition() > ELEVATOR_ZERO) {
-            double scaledSpeed = speed * 0.1;
-            move(-scaledSpeed);
-        } else {
-            hold();
-        }
+        double scaledSpeed = speed * 0.1;
+        move(-scaledSpeed);
     }
 
     public void move(double speed) {
-        leftMotor.set(speed);
-        rightMotor.set(speed);
-        leftMotorPrevPos = leftMotor.getEncoder().getPosition();
-        rightMotorPrevPos = rightMotor.getEncoder().getPosition();
+        if (elevatorBottomLS.get() || elevatorTopLS.get()) {
+            hold();
+        } else {
+            leftMotor.set(speed);
+            rightMotor.set(speed);
+            leftMotorPrevPos = leftMotor.getEncoder().getPosition();
+            rightMotorPrevPos = rightMotor.getEncoder().getPosition();
+        }
     }
 
     public void hold() {
-        if (leftMotor.getEncoder().getPosition() < ELEVATOR_ZERO) {
+        if (elevatorBottomLS.get()) {
             leftMotor.set(0);
             rightMotor.set(0);
         } else {
@@ -90,23 +94,23 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     // Arm
-    public void moveArm(double speed) {
-        armMotor.set(speed);
+    public void movePivot(double speed) {
+        armPivotMotor.set(speed);
 
-        armPrevPos = armMotor.getEncoder().getPosition();
+//        armPivotPrevPos = armPivotMotor.getRotorPosition().getValueAsDouble();
     }
 
-    public void moveIntake(double speed) {
+    public void intake(double speed) {
         armIntakeMotor.set(speed);
     }
 
     public void holdPivot() {
-        armMotor.getClosedLoopController().setReference(armPrevPos, ControlType.kPosition);
+        armPivotMotor.set(0);
     }
 
     @Override
     public void periodic() {
-        System.out.println("Arm holding at (" + armPrevPos + ")");
-        System.out.println("Arm Current Position: " + armMotor.getEncoder().getPosition());
+//        System.out.println("Arm holding at (" + armPivotPrevPos + ")");
+//        System.out.println("Arm Current Position: " + armPivotMotor.getRotorPosition().getValueAsDouble());
     }
 }

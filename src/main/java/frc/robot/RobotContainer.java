@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.CommandSwerveDrivetrain;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 
 public class RobotContainer {
@@ -29,7 +30,9 @@ public class RobotContainer {
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+
     private final ElevatorSubsystem s_elevator = new ElevatorSubsystem();
+    private final ClimberSubsystem s_climber = new ClimberSubsystem();
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -84,28 +87,30 @@ public class RobotContainer {
         // Pivot
         // Up
         controller2.povUp().whileTrue(Commands.run(() -> {
-            s_elevator.moveArm(-0.5);
+            s_elevator.movePivot(-0.5);
         }));
 
         // Down
         controller2.povDown().whileTrue(Commands.run(() -> {
-            s_elevator.moveArm(0.25);
+            s_elevator.movePivot(0.25);
         }));
 
         controller2.povUp().or(controller2.povDown()).onFalse(Commands.runOnce(s_elevator::holdPivot));
 
         // Intake
         controller2.leftBumper().whileTrue(Commands.run(() -> {
-            s_elevator.moveIntake(0.25);
+            s_elevator.intake(0.25);
         }));
 
         controller2.rightBumper().whileTrue(Commands.run(() -> {
-            s_elevator.moveIntake(-0.1);
+            s_elevator.intake(-0.1);
         }));
 
         controller2.leftBumper().or(controller2.rightBumper()).onFalse(Commands.run(() -> {
-            s_elevator.moveIntake(0);
+            s_elevator.intake(0);
         }));
+
+        controller2.start().onTrue(Commands.runOnce(s_climber::climb));
 
 
         // reset the field-centric heading on left bumper press

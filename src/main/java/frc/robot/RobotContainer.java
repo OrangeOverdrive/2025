@@ -11,15 +11,12 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
-import frc.robot.commands.Autos;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ClimberSubsystem;
@@ -54,7 +51,7 @@ public class RobotContainer {
     public RobotContainer() {
         configureBindings();
 
-        autoChooser.addOption("Do Nothing", Autos.doNothingAuto());
+        autoChooser.addOption("Do Nothing", Autos.driveAndScoreCoralAuto(drivetrain));
         autoChooser.addOption("Drive Forward", Autos.driveForwardAuto(drivetrain));
         Shuffleboard.getTab("Autos").add("Drive Forward", autoChooser);
     }
@@ -84,10 +81,10 @@ public class RobotContainer {
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        controller1.back().and(controller1.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        controller1.back().and(controller1.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        controller1.start().and(controller1.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        controller1.start().and(controller1.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+//        controller1.back().and(controller1.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+//        controller1.back().and(controller1.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+//        controller1.start().and(controller1.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+//        controller1.start().and(controller1.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         controller2.leftTrigger().whileTrue(Commands.run(() -> s_elevator.moveUp(controller2.getLeftTriggerAxis())));
         controller2.rightTrigger().whileTrue(Commands.run(() -> s_elevator.moveDown(controller2.getRightTriggerAxis())));

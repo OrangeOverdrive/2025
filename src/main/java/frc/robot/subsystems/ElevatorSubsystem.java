@@ -73,7 +73,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void move(double speed) {
-        if (elevatorBottomLS.get() || elevatorTopLS.get()) {
+        if (elevatorTopLS.get() || elevatorTopLS.get()) {
             hold();
         } else {
             leftMotor.set(speed);
@@ -84,7 +84,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void hold() {
-        if (elevatorBottomLS.get()) {
+        if (elevatorTopLS.get()) {
             leftMotor.set(0);
             rightMotor.set(0);
         } else {
@@ -95,7 +95,8 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     // Arm
     public void movePivot(double speed) {
-        armPivotMotor.set(speed);
+        double scaledSpeed = speed * 0.2;
+        armPivotMotor.set(scaledSpeed);
 
 //        armPivotPrevPos = armPivotMotor.getRotorPosition().getValueAsDouble();
     }

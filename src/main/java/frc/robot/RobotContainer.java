@@ -110,7 +110,7 @@ public class RobotContainer {
         }));
 
         controller2.rightBumper().whileTrue(Commands.run(() -> {
-            s_elevator.intake(-0.1);
+            s_elevator.intake(-0.25);
         }));
 
         controller2.leftBumper().or(controller2.rightBumper()).onFalse(Commands.run(() -> {

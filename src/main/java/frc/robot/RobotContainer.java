@@ -78,7 +78,7 @@ public class RobotContainer {
 
         controller1.a().whileTrue(drivetrain.applyRequest(() -> brake));
         controller1.b().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(MathUtil.applyDeadband(-controller1.getLeftY(), 0.05), MathUtil.applyDeadband(-controller1.getLeftX(), 0.05)))));
-
+        controller1.povDown().whileTrue(Commands.run(() -> ))
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
 //        controller1.back().and(controller1.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
@@ -89,7 +89,7 @@ public class RobotContainer {
         controller2.leftTrigger().whileTrue(Commands.run(() -> s_elevator.moveUp(controller2.getLeftTriggerAxis())));
         controller2.rightTrigger().whileTrue(Commands.run(() -> s_elevator.moveDown(controller2.getRightTriggerAxis())));
 
-        controller2.rightTrigger().or(controller2.leftTrigger()).onFalse(Commands.runOnce(s_elevator::hold));
+        controller2.rightTrigger().and(controller2.leftTrigger()).onFalse(Commands.runOnce(s_elevator::hold));
 
         // Pivot
         // Up
@@ -110,7 +110,8 @@ public class RobotContainer {
         }));
 
         controller2.rightBumper().whileTrue(Commands.run(() -> {
-            s_elevator.intake(-0.25);
+            s_elevator.intake(-0.3
+            );
         }));
 
         controller2.leftBumper().or(controller2.rightBumper()).onFalse(Commands.run(() -> {

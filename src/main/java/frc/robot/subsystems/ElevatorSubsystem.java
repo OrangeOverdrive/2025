@@ -63,7 +63,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void moveUp(double speed) {
-        double scaledSpeed = speed * 0.2;
+        double scaledSpeed = speed * 0.4;
         move(scaledSpeed);
     }
 
@@ -73,24 +73,24 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void move(double speed) {
-        if (elevatorTopLS.get() || elevatorTopLS.get()) {
-            hold();
-        } else {
+        // if (elevatorTopLS.get() || elevatorTopLS.get()) {
+        //     hold();
+        // } else {
             leftMotor.set(speed);
-            rightMotor.set(speed);
+            rightMotor.set(-speed);
             leftMotorPrevPos = leftMotor.getEncoder().getPosition();
             rightMotorPrevPos = rightMotor.getEncoder().getPosition();
-        }
+        
     }
 
     public void hold() {
-        if (elevatorTopLS.get()) {
-            leftMotor.set(0);
-            rightMotor.set(0);
-        } else {
+        // if (elevatorTopLS.get()) {
+        //     leftMotor.set(0);
+        //     rightMotor.set(0);
+        // } else {
             leftMotor.getClosedLoopController().setReference(leftMotorPrevPos, ControlType.kPosition);
             rightMotor.getClosedLoopController().setReference(rightMotorPrevPos, ControlType.kPosition);
-        }
+        
     }
 
     // Arm

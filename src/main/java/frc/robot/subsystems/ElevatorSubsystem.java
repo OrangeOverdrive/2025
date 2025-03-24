@@ -77,7 +77,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         //     hold();
         // } else {
             leftMotor.set(speed);
-            rightMotor.set(-speed);
+            rightMotor.set(speed);
             leftMotorPrevPos = leftMotor.getEncoder().getPosition();
             rightMotorPrevPos = rightMotor.getEncoder().getPosition();
         
@@ -88,6 +88,8 @@ public class ElevatorSubsystem extends SubsystemBase {
         //     leftMotor.set(0);
         //     rightMotor.set(0);
         // } else {
+            leftMotor.set(0);
+            rightMotor.set(0);
             leftMotor.getClosedLoopController().setReference(leftMotorPrevPos, ControlType.kPosition);
             rightMotor.getClosedLoopController().setReference(rightMotorPrevPos, ControlType.kPosition);
         

@@ -31,14 +31,15 @@ public class ElevatorSubsystem extends SubsystemBase {
 
     public ElevatorSubsystem() {
         leftMotor = new SparkMax(Constants.CanIDs.ELEVATOR_LEFT, SparkLowLevel.MotorType.kBrushless);
-        rightMotor = new SparkMax(Constants.CanIDs.ELEVATOR_RIGHT, SparkLowLevel.MotorType.kBrushed);
+        rightMotor = new SparkMax(Constants.CanIDs.ELEVATOR_RIGHT, SparkLowLevel.MotorType.kBrushless);
+
 
         ELEVATOR_ZERO = leftMotor.getEncoder().getPosition();
 
         SparkMaxConfig leftConfig = new SparkMaxConfig();
         SparkMaxConfig rightConfig = new SparkMaxConfig();
-        leftConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
-        rightConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+//        leftConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+//        rightConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
         rightConfig.inverted(true);
 
         double kP = 0.001;
@@ -68,31 +69,29 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public void moveDown(double speed) {
-        double scaledSpeed = speed * 0.1;
-        move(-scaledSpeed);
+        if (leftMotor.getEncoder().getPosition() > ELEVATOR_ZERO) {
+            double scaledSpeed = speed * 0.03;
+            move(-scaledSpeed);
+        } else {
+            hold();
+        }
     }
 
     public void move(double speed) {
-        // if (elevatorTopLS.get() || elevatorTopLS.get()) {
-        //     hold();
-        // } else {
-            leftMotor.set(speed);
-            rightMotor.set(speed);
-            leftMotorPrevPos = leftMotor.getEncoder().getPosition();
-            rightMotorPrevPos = rightMotor.getEncoder().getPosition();
-        
+        leftMotor.set(speed);
+        rightMotor.set(speed);
+        leftMotorPrevPos = leftMotor.getEncoder().getPosition();
+        rightMotorPrevPos = rightMotor.getEncoder().getPosition();
     }
 
     public void hold() {
-        // if (elevatorTopLS.get()) {
-        //     leftMotor.set(0);
-        //     rightMotor.set(0);
-        // } else {
+        if (leftMotor.getEncoder().getPosition() < ELEVATOR_ZERO) {
             leftMotor.set(0);
             rightMotor.set(0);
+        } else {
             leftMotor.getClosedLoopController().setReference(leftMotorPrevPos, ControlType.kPosition);
             rightMotor.getClosedLoopController().setReference(rightMotorPrevPos, ControlType.kPosition);
-        
+        }
     }
 
     // Arm
@@ -115,5 +114,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     public void periodic() {
 //        System.out.println("Arm holding at (" + armPivotPrevPos + ")");
 //        System.out.println("Arm Current Position: " + armPivotMotor.getRotorPosition().getValueAsDouble());
+
+        System.out.println("Right elevator is feeding " + rightMotor.getEncoder().getVelocity());
+        SmartDashboard.putNumber("Left Encoder", leftMotor.getEncoder().getPosition());
+        SmartDashboard.putNumber("Right Encoder", rightMotor.getEncoder().getPosition());
+        SmartDashboard.putNumber("Wrist Position", armPivotMotor.getRotorPosition().getValueAsDouble());
     }
 }

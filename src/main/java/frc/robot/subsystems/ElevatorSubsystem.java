@@ -33,13 +33,12 @@ public class ElevatorSubsystem extends SubsystemBase {
         leftMotor = new SparkMax(Constants.CanIDs.ELEVATOR_LEFT, SparkLowLevel.MotorType.kBrushless);
         rightMotor = new SparkMax(Constants.CanIDs.ELEVATOR_RIGHT, SparkLowLevel.MotorType.kBrushless);
 
-
         ELEVATOR_ZERO = leftMotor.getEncoder().getPosition();
 
         SparkMaxConfig leftConfig = new SparkMaxConfig();
         SparkMaxConfig rightConfig = new SparkMaxConfig();
-//        leftConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
-//        rightConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+        leftConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
+        rightConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
         rightConfig.inverted(true);
 
         double kP = 0.001;
@@ -55,8 +54,8 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         leftConfig.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder).pidf(kP, kI, kD, 0);
         rightConfig.closedLoop.feedbackSensor(ClosedLoopConfig.FeedbackSensor.kPrimaryEncoder).pidf(kP, kI, kD, 0);
-        leftMotor.configure(leftConfig, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
-        rightMotor.configure(rightConfig, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kNoPersistParameters);
+        leftMotor.configure(leftConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+        rightMotor.configure(rightConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
 
         // Arm
         armPivotMotor = new TalonFX(Constants.CanIDs.ARM_PIVOT);

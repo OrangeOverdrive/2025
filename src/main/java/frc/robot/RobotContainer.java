@@ -77,10 +77,10 @@ public class RobotContainer {
                 ));
 
         controller1.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    
+
 
         controller1.b().whileTrue(drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(MathUtil.applyDeadband(-controller1.getLeftY(), 0.05), MathUtil.applyDeadband(-controller1.getLeftX(), 0.05)))));
-    
+
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
 //        controller1.back().and(controller1.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
@@ -90,6 +90,25 @@ public class RobotContainer {
 
         controller2.leftTrigger().whileTrue(Commands.run(() -> s_elevator.moveUp(controller2.getLeftTriggerAxis())));
         controller2.rightTrigger().whileTrue(Commands.run(() -> s_elevator.moveDown(controller2.getRightTriggerAxis())));
+
+        controller2.a().onTrue(Commands.runOnce(() -> s_elevator.setElevatorTarget(3)));
+        controller2.b().onTrue(Commands.runOnce(() -> s_elevator.setElevatorTarget(4)));
+        controller2.x().onTrue(Commands.runOnce(() -> s_elevator.setElevatorTarget(1)));
+//        controller2.a().whileTrue(Commands.runOnce(() -> {
+//            s_elevator.setElevatorTarget(3);
+//        }));
+
+        controller1.start().whileTrue(Commands.run(() -> {
+            s_climber.climb(-1);
+        }));
+
+        controller1.y().whileTrue(Commands.run(() -> {
+            s_climber.climb(1);
+        }));
+
+        controller1.start().or(controller1.y()).whileFalse(Commands.run(() -> {
+            s_climber.stop();
+        }));
 
         controller2.rightTrigger().or(controller2.leftTrigger()).whileFalse(Commands.runOnce(s_elevator::hold));
 
@@ -101,7 +120,7 @@ public class RobotContainer {
 
         // Down
         controller2.povDown().whileTrue(Commands.run(() -> {
-            s_elevator.movePivot(0.25);
+            s_elevator.movePivot(0.4);
         }));
 
         controller2.povUp().or(controller2.povDown()).onFalse(Commands.runOnce(s_elevator::holdPivot));
@@ -119,9 +138,6 @@ public class RobotContainer {
         controller2.leftBumper().or(controller2.rightBumper()).onFalse(Commands.run(() -> {
             s_elevator.intake(0);
         }));
-
-        controller2.start().onTrue(Commands.runOnce(s_climber::climb));
-
 
         // reset the field-centric heading on left bumper press
         controller1.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));

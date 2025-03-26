@@ -21,10 +21,10 @@ public class Constants {
     }
 
     public static final class ElevatorConstants {
-        public static final int CORAL_L1 = 0;
-        public static final int CORAL_L2 = 0;
-        public static final int CORAL_L3 = 0;
-        public static final int CORAL_L4 = 0;
+        public static final double CORAL_L1 = 0;
+        public static final double CORAL_L2 = 0;
+        public static final double CORAL_L3 = 5.99999;
+        public static final double CORAL_L4 = 20.78562355;
 
         public static final int ARM_HOME = 0;
         public static final int ARM_INTAKE_STATION = 0;

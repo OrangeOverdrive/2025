@@ -45,8 +45,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         leftConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
 
         rightConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
-        rightConfig.inverted(true);
-        rightConfig.follow(Constants.CanIDs.ELEVATOR_LEFT);
+        rightConfig.follow(Constants.CanIDs.ELEVATOR_LEFT, true);
 
         double kP = 0.07;
         double kI = 0;
@@ -91,7 +90,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             closedLoopController.setReference(Constants.ElevatorConstants.CORAL_L2, ControlType.kPosition, ClosedLoopSlot.kSlot0);
         } else if (target == 3) {
             System.out.println("going to level 3, encoder at position " + leftMotor.getEncoder().getPosition());
-            leftMotor.getClosedLoopController().setReference(15, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+            closedLoopController.setReference(15, ControlType.kPosition, ClosedLoopSlot.kSlot0);
         } else if (target == 4) {
             closedLoopController.setReference(Constants.ElevatorConstants.CORAL_L4, ControlType.kPosition, ClosedLoopSlot.kSlot0);
         } else if (target == 0) {

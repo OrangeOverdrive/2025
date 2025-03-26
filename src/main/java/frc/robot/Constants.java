@@ -26,7 +26,7 @@ public class Constants {
         public static final double CORAL_L3 = 5.99999;
         public static final double CORAL_L4 = 20.78562355;
 
-        public static final int ARM_HOME = 0;
+        public static final int ARM_HOME = 0; //Level is 7.64599609375
         public static final int ARM_INTAKE_STATION = 0;
         public static final int ARM_DEPOSIT_ANGLED = 0;
         public static final int ARM_DEPOSIT_UPRIGHT = 0;

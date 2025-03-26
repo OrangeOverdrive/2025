@@ -36,6 +36,7 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         leftMotor.getEncoder().setPosition(0);
         rightMotor.getEncoder().setPosition(0);
+        
 
         ELEVATOR_ZERO = leftMotor.getEncoder().getPosition();
 
@@ -66,6 +67,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         // Arm
         armPivotMotor = new TalonFX(Constants.CanIDs.ARM_PIVOT);
         armIntakeMotor = new TalonFX(Constants.CanIDs.ARM_INTAKE);
+        armPivotMotor.setPosition(0);
     }
 
     public void moveUp(double speed) {

@@ -18,7 +18,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.generated.TunerConstants;
+import frc.robot.Constants.ElevatorConstants;
 import frc.robot.generated.CommandSwerveDrivetrain;
+import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
 
@@ -34,6 +36,7 @@ public class RobotContainer {
 
     private final ElevatorSubsystem s_elevator = new ElevatorSubsystem();
     private final ClimberSubsystem s_climber = new ClimberSubsystem();
+    private final AlgaeSubsystem s_algae = new AlgaeSubsystem();
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -112,6 +115,19 @@ public class RobotContainer {
 
         controller2.rightTrigger().or(controller2.leftTrigger()).whileFalse(Commands.runOnce(s_elevator::hold));
 
+
+        //Algae Kicker
+        controller1.rightTrigger().whileTrue(Commands.run(() -> {
+            s_algae.kickup(ElevatorConstants.kicker);
+        }));
+
+        controller1.leftTrigger().whileTrue(Commands.run(() -> {
+            s_algae.kickdown(ElevatorConstants.kicker);
+        }));
+
+        controller1.rightTrigger().or(controller1.leftTrigger()).whileFalse(Commands.run(() -> {
+            s_algae.stopkick(0);
+        }));
         // Pivot
         // Up
         controller2.povUp().whileTrue(Commands.run(() -> {

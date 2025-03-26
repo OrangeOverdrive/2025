@@ -30,5 +30,6 @@ public class Constants {
         public static final int ARM_INTAKE_STATION = 0;
         public static final int ARM_DEPOSIT_ANGLED = 0;
         public static final int ARM_DEPOSIT_UPRIGHT = 0;
+        public static final double kicker = 0.1;
     }
 }

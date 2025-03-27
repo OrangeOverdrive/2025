@@ -125,7 +125,7 @@ public class RobotContainer {
             s_algae.kickdown(ElevatorConstants.kicker);
         }));
 
-        controller1.rightTrigger().or(controller1.leftTrigger()).whileFalse(Commands.run(() -> {
+        controller1.rightTrigger().or(controller1.leftTrigger()).onFalse(Commands.runOnce(() -> {
             s_algae.stopkick(0);
         }));
         // Pivot
